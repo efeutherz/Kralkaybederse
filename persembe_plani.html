@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Perşembe Zirvesi ☕</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=Poppins:wght@300;400;600&display=swap');
+
+        body {
+            margin: 0; padding: 0; height: 100vh; overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            background: #111; 
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            text-align: center; color: #f1f2f6;
+            user-select: none; -webkit-tap-highlight-color: transparent;
+        }
+
+        /* =========================================
+           SİNEMATİK & CANLI GİRİŞ TASARIMI
+        ========================================= */
+        #cinematic-intro {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 100; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            background-color: #000; overflow: hidden;
+            transition: opacity 1s ease;
+        }
+
+        .intro-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1576107232684-1279f390859f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2560&q=80');
+            background-size: cover; background-position: center;
+            opacity: 0.6; filter: brightness(0.7) contrast(1.2);
+            animation: kenBurns 5s ease-out forwards;
+        }
+        @keyframes kenBurns {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.15); }
+        }
+
+        .falling-fry {
+            position: absolute; z-index: 10; pointer-events: none;
+            filter: drop-shadow(0px 5px 10px rgba(0,0,0,0.5));
+            animation: fall linear forwards;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg) scale(0.8); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(110vh) rotate(360deg) scale(1.2); opacity: 0; }
+        }
+
+        .intro-text-box {
+            position: relative; z-index: 101;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 35px 45px; border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+        }
+
+        .intro-title {
+            font-family: 'Playfair Display', serif; font-size: 2em;
+            color: #fbc531; margin: 0 0 10px 0; letter-spacing: 1px;
+        }
+        
+        .intro-subtitle {
+            font-size: 1.05em; font-weight: 300; color: #fff; margin: 0;
+            min-height: 1.5em; 
+        }
+
+        .loader-bar-bg {
+            width: 100%; height: 4px; background: rgba(255,255,255,0.2);
+            border-radius: 5px; margin-top: 20px; overflow: hidden;
+        }
+        .loader-bar-fill {
+            height: 100%; width: 0%; background: #fbc531;
+            transition: width 0.1s linear; box-shadow: 0 0 10px #fbc531;
+        }
+
+        /* =========================================
+           VIP KAHVE UYGULAMASI TASARIMI
+        ========================================= */
+        #app-container {
+            display: none; opacity: 0; width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0;
+            background-image: radial-gradient(circle at top right, #2a1a0f, #000);
+            flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 1.5s ease;
+        }
+
+        .bg-shape {
+            position: absolute; border-radius: 50%; opacity: 0.2; z-index: 1; pointer-events: none; filter: blur(60px);
+        }
+        .shape-1 { width: 300px; height: 300px; background: #e1b12c; top: -50px; left: -50px; }
+        .shape-2 { width: 400px; height: 400px; background: #c23616; bottom: -100px; right: -100px; }
+
+        .glass-box {
+            background: rgba(20, 20, 20, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(225, 177, 44, 0.3); padding: 40px 25px; border-radius: 20px;
+            width: 85%; max-width: 380px; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            z-index: 10; position: relative; transition: all 0.5s ease;
+        }
+
+        h1 { font-family: 'Playfair Display', serif; color: #e1b12c; margin-top: 0; font-size: 1.8em; letter-spacing: 1px; }
+        p { font-size: 0.95em; line-height: 1.6; color: #ced6e0; margin-bottom: 25px; font-weight: 300; }
+
+        .step-container { display: none; opacity: 0; transition: opacity 0.5s; position: absolute; width: calc(100% - 50px); top: 40px; left: 25px; }
+        .active-step { display: block; opacity: 1; position: relative; top: 0; left: 0; width: auto; }
+        
+        .options-grid { display: flex; flex-direction: column; gap: 12px; }
+        
+        .select-btn {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(225, 177, 44, 0.2);
+            color: #f1f2f6; padding: 15px; border-radius: 12px; font-size: 0.95em; font-weight: 400; cursor: pointer;
+            transition: all 0.3s ease; display: flex; align-items: center; gap: 15px; width: 100%; -webkit-appearance: none;
+        }
+        .select-btn:hover { border-color: #e1b12c; background: rgba(225, 177, 44, 0.1); color: #e1b12c; }
+        .select-btn:active { transform: scale(0.98); }
+        .btn-icon { font-size: 1.3em; }
+
+        /* HİPERAKTİF ŞAKA BUTONU ÖZEL STİLİ */
+        #joke-btn {
+            transition: left 0.1s ease-out, top 0.1s ease-out, background 0.2s, color 0.2s !important;
+            z-index: 1000;
+        }
+
+        /* PUZZLE TASARIMI */
+        .puzzle-grid { display: flex; justify-content: center; gap: 15px; margin: 30px 0; }
+        .puzzle-tile {
+            width: 70px; height: 70px;
+            background: rgba(225, 177, 44, 0.1); border: 1px solid #e1b12c;
+            border-radius: 12px; font-size: 2.5em;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; -webkit-tap-highlight-color: transparent;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s;
+        }
+        .puzzle-tile:active { background: rgba(225, 177, 44, 0.3); }
+
+        .success-text { font-size: 1.1em; font-weight: bold; color: #2ed573; margin-top: 15px; animation: popIn 0.5s forwards; display: none; }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .time-picker-container { display: flex; flex-direction: column; gap: 20px; align-items: center; }
+        .custom-time-input {
+            background: rgba(255, 255, 255, 0.1); border: 2px solid #e1b12c; color: #e1b12c;
+            font-size: 2.5em; font-family: 'Poppins', sans-serif; padding: 10px 20px;
+            border-radius: 15px; text-align: center; outline: none; width: 70%;
+        }
+        .custom-time-input::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; }
+
+        .vip-card {
+            text-align: left; background: rgba(0, 0, 0, 0.5); padding: 20px; 
+            border-radius: 10px; border: 1px solid #e1b12c; margin-bottom: 25px;
+            box-shadow: inset 0 0 15px rgba(225, 177, 44, 0.1);
+        }
+        .vip-card b { color: #e1b12c; display: inline-block; width: 70px; }
+        .vip-card span { color: #fff; font-weight: 300; }
+
+        .social-buttons { display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; }
+        /* BUTON SINIFI DEĞİŞTİRİLDİ (<a> etiketinden <button> etiketine uyum için) */
+        .social-btn {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            padding: 12px; border-radius: 50px; text-decoration: none;
+            color: white; font-weight: 600; font-size: 1.05em; width: 90%;
+            transition: all 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+            cursor: pointer; border: none; font-family: 'Poppins', sans-serif;
+        }
+        .social-btn:active { transform: scale(0.95); }
+        .ig-btn { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
+        .wa-btn { background-color: #25D366; color: #fff; }
+
+    </style>
+</head>
+<body>
+
+    <div id="cinematic-intro">
+        <div class="intro-bg"></div>
+        <div class="intro-text-box">
+            <h2 class="intro-title">Mimar Terapisi</h2>
+            <p class="intro-subtitle" id="intro-subtitle">Sistem Başlatılıyor...</p>
+            <div class="loader-bar-bg">
+                <div class="loader-bar-fill" id="intro-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-container">
+        <div class="bg-shape shape-1"></div>
+        <div class="bg-shape shape-2"></div>
+
+        <div class="glass-box" id="main-box">
+            
+            <div id="step-1" class="step-container active-step">
+                <h1>Perşembe Buluşması ☕</h1>
+                <p>
+                    Mimar gözünü yormayacak mekanları listeledim.<br><br>
+                    <b>Mekan seçimi senden, hesaplar benden.</b> 😎
+                </p>
+                <div class="options-grid">
+                    
+                    <button class="select-btn" id="joke-btn" onclick="return false;">
+                        <span class="btn-icon">✨</span> Şırdancı Cumali (Şakaa)
+                    </button>
+
+                    <button class="select-btn" onclick="selectLocation('Storie Store')">
+                        <span class="btn-icon">🌿</span> Storie Store (Gazipaşa)
+                    </button>
+                    <button class="select-btn" onclick="selectLocation('Botta Bloom')">
+                        <span class="btn-icon">📻</span> Botta Bloom (Relax)
+                    </button>
+                    <button class="select-btn" onclick="selectLocation('Moodra Coffee')">
+                        <span class="btn-icon">☕</span> Moodra Coffee
+                    </button>
+                </div>
+            </div>
+
+            <div id="step-puzzle" class="step-container">
+                <h1>Mimari Doğrulama 🧱</h1>
+                <p>
+                    VIP sisteme giriş için mimar olduğunu kanıtlamalısın.<br><br>
+                    <b>Dokunarak kolonları düzelt, statik çökmek üzere! 😱</b>
+                </p>
+                
+                <div class="puzzle-grid">
+                    <div class="puzzle-tile" id="tile-0" onclick="rotateTile(0)">🏛️</div>
+                    <div class="puzzle-tile" id="tile-1" onclick="rotateTile(1)">🏛️</div>
+                    <div class="puzzle-tile" id="tile-2" onclick="rotateTile(2)">🏛️</div>
+                </div>
+
+                <div class="success-text" id="puzzle-success">Proje Onaylandı ✅ Statik harika!</div>
+            </div>
+
+            <div id="step-2" class="step-container">
+                <h1>Zaman Ayarı ⏱️</h1>
+                <p>
+                    Freelance bir mimarın takviminde boşluk bulmanın zorluğunu biliyorum. İpleri sana bırakıyorum.<br><br>
+                    <b>Kaçta buluşalım?</b>
+                </p>
+                <div class="time-picker-container">
+                    <input type="time" id="user-time" class="custom-time-input" value="15:00">
+                    <button class="select-btn" style="justify-content: center; font-weight: bold;" onclick="confirmTime()">
+                        Bu Saat Harika 😎
+                    </button>
+                </div>
+            </div>
+
+            <div id="step-3" class="step-container">
+                <h1>Protokol Tamam 🤝</h1>
+                
+                <div class="vip-card">
+                    <b>Gün:</b> <span>Perşembe</span><br><br>
+                    <b>Mekan:</b> <span id="final-loc"></span><br><br>
+                    <b>Saat:</b> <span id="final-time"></span><br><br>
+                    <hr style="border: 0; border-top: 1px dashed rgba(225, 177, 44, 0.3); margin: 15px 0;">
+                    <span style="font-size: 0.85em; color: #e1b12c;">* Başka bir zaman yoğurtlu patates kızartması sözümdür. 🍟</span>
+                </div>
+
+                <p style="font-size: 0.9em;">Rezervasyonu kesinleştirmek için tercihinle bana dönüş yapabilirsin.</p>
+                
+                <div class="social-buttons">
+                    <button id="ig-link" class="social-btn ig-btn" onclick="sendViaInstagram(event)">
+                        <span>📸</span> Instagram'dan Onayla
+                    </button>
+                    <a href="#" id="wa-link" class="social-btn wa-btn">
+                        <span>💬</span> WhatsApp'tan Onayla
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // İLETİŞİM BİLGİLERİN
+        // ==========================================
+        const yourPhoneNumber = "905369297201";    
+        const yourInstagramUsername = "efeariyol"; 
+        // ==========================================
+
+        // YENİ EKLENEN DEĞİŞKEN (Mesajı hafızada tutmak için)
+        let finalMessage = "";
+
+        document.addEventListener("DOMContentLoaded", function() {
+            
+            // --- CANLI PATATES ANİMASYONU ---
+            const introContainer = document.getElementById('cinematic-intro');
+            let fryInterval;
+            
+            function createFallingFry() {
+                const fry = document.createElement('div');
+                fry.classList.add('falling-fry');
+                fry.innerText = Math.random() > 0.1 ? '🍟' : '🥣'; 
+                fry.style.left = Math.random() * 100 + 'vw';
+                fry.style.fontSize = (Math.random() * 30 + 20) + 'px';
+                fry.style.animationDuration = (Math.random() * 2 + 3) + 's'; 
+                introContainer.appendChild(fry);
+                setTimeout(() => { fry.remove(); }, 5000);
+            }
+            
+            fryInterval = setInterval(createFallingFry, 300);
+
+            // --- İNTRO YÜKLEME ---
+            const introSub = document.getElementById('intro-subtitle');
+            const introBar = document.getElementById('intro-bar');
+            const appContainer = document.getElementById('app-container');
+
+            const introMessages = [
+                "Freelance stresi taranıyor...",
+                "Yoğurtlu Patates Kızartması yükleniyor 🍟...",
+                "Buz gibi yoğurt dökülüyor 🥣...",
+                "VIP Rezervasyon ekranı açılıyor..."
+            ];
+
+            let progress = 0;
+            const loadInterval = setInterval(() => {
+                progress += Math.random() * 2;
+                if (progress >= 100) progress = 100;
+                
+                introBar.style.width = progress + "%";
+                
+                let msgIndex = Math.floor((progress / 100) * introMessages.length);
+                if (msgIndex === introMessages.length) msgIndex--;
+                introSub.innerText = introMessages[msgIndex];
+
+                if (progress === 100) {
+                    clearInterval(loadInterval);
+                    setTimeout(() => {
+                        clearInterval(fryInterval); 
+                        introContainer.style.opacity = '0';
+                        appContainer.style.display = 'flex';
+                        
+                        setTimeout(() => {
+                            introContainer.style.display = 'none';
+                            appContainer.style.opacity = '1';
+                        }, 1000);
+                    }, 800);
+                }
+            }, 60); 
+
+            // --- HİPERAKTİF ŞAKA BUTONU (ŞIRDANCI CUMALİ) ---
+            const jokeBtn = document.getElementById('joke-btn');
+            if (jokeBtn) {
+                let isAbsolute = false;
+
+                const runAway = (e) => {
+                    // Dokunmatik ekranda tıklamayı engelle
+                    if(e.type === 'touchstart') e.preventDefault();
+                    
+                    // İlk kaçışta butonu menü akışından koparıp özgür bırakıyoruz
+                    if (!isAbsolute) {
+                        jokeBtn.style.position = 'fixed';
+                        isAbsolute = true;
+                    }
+                    
+                    // Ekran sınırları içinde uzağa rastgele fırlat (Taşmaları engeller)
+                    const maxX = window.innerWidth - jokeBtn.offsetWidth - 20;
+                    const maxY = window.innerHeight - jokeBtn.offsetHeight - 20;
+                    
+                    const randomX = Math.max(20, Math.floor(Math.random() * maxX));
+                    const randomY = Math.max(20, Math.floor(Math.random() * maxY));
+                    
+                    // Butonu yeni koordinatlarına ışınla
+                    jokeBtn.style.left = `${randomX}px`;
+                    jokeBtn.style.top = `${randomY}px`;
+                    jokeBtn.style.transform = 'none'; 
+                    
+                    // Rengini ve yazısını agresifleştir
+                    jokeBtn.style.borderColor = "#eb3b5a";
+                    jokeBtn.style.color = "#fff";
+                    jokeBtn.style.background = "#eb3b5a";
+                    jokeBtn.innerHTML = `<span class="btn-icon">🏃‍♂️💨</span> Yakalayamazsın!`;
+                };
+                
+                jokeBtn.addEventListener('mouseover', runAway);
+                jokeBtn.addEventListener('touchstart', runAway, {passive: false});
+            }
+        });
+
+        // --- UYGULAMA İÇİ KONTROLLER ---
+        let chosenLocation = "";
+        let tileAngles = [90, 270, 180];
+
+        // 1. Mekan Seçimi -> Puzzle'a Geçiş
+        function selectLocation(loc) {
+            chosenLocation = loc;
+            
+            document.getElementById('step-1').classList.remove('active-step');
+            
+            setTimeout(() => {
+                initPuzzle();
+                document.getElementById('step-puzzle').classList.add('active-step');
+            }, 400); 
+        }
+
+        // 1.5 Puzzle Mantığı
+        function initPuzzle() {
+            const possibleAngles = [90, 180, 270];
+            tileAngles = [
+                possibleAngles[Math.floor(Math.random() * 3)],
+                possibleAngles[Math.floor(Math.random() * 3)],
+                possibleAngles[Math.floor(Math.random() * 3)]
+            ];
+            updateTileStyles();
+        }
+
+        function rotateTile(index) {
+            tileAngles[index] += 90;
+            updateTileStyles();
+            checkPuzzleCompleted();
+        }
+
+        function updateTileStyles() {
+            for(let i=0; i<3; i++) {
+                document.getElementById(`tile-${i}`).style.transform = `rotate(${tileAngles[i]}deg)`;
+            }
+        }
+
+        function checkPuzzleCompleted() {
+            const isSolved = tileAngles.every(angle => angle % 360 === 0);
+            
+            if(isSolved) {
+                document.querySelectorAll('.puzzle-tile').forEach(t => t.style.pointerEvents = 'none');
+                document.getElementById('puzzle-success').style.display = 'block';
+                
+                setTimeout(() => {
+                    document.getElementById('step-puzzle').classList.remove('active-step');
+                    setTimeout(() => {
+                        document.getElementById('step-2').classList.add('active-step');
+                    }, 400);
+                }, 1800);
+            }
+        }
+
+        // 2. Saat Seçimi -> Final Ekranına Geçiş
+        function confirmTime() {
+            const selectedTime = document.getElementById('user-time').value;
+            
+            document.getElementById('final-loc').innerText = chosenLocation;
+            document.getElementById('final-time').innerText = selectedTime;
+
+            // MESAJI GENEL DEĞİŞKENE KAYDET (GÜNCELLENDİ)
+            finalMessage = `Perşembe buluşması onaylandı! 😎\n\n📍 Mekan: ${chosenLocation}\n🕒 Saat: ${selectedTime}\n\nKahveler senden, patates benden miydi, yoksa tam tersi mi? 😂`;
+            
+            // YALNIZCA WHATSAPP LİNKİ BURADA KALDI (GÜNCELLENDİ)
+            document.getElementById('wa-link').href = `https://wa.me/${yourPhoneNumber}?text=${encodeURIComponent(finalMessage)}`;
+
+            document.getElementById('step-2').classList.remove('active-step');
+            setTimeout(() => {
+                document.getElementById('step-3').classList.add('active-step');
+            }, 400);
+        }
+
+        // --- YENİ EKLENEN INSTAGRAM KOPYALAMA FONKSİYONU ---
+        function sendViaInstagram(e) {
+            e.preventDefault();
+            const igBtn = document.getElementById('ig-link');
+            const originalHTML = igBtn.innerHTML;
+
+            // Yazıyı Panoya Kopyala
+            navigator.clipboard.writeText(finalMessage).then(() => {
+                igBtn.innerHTML = `<span>📋</span> Mesaj Kopyalandı!`;
+                igBtn.style.background = "#2ed573"; 
+                
+                // 1.5 Saniye sonra DM kutusuna yönlendir
+                setTimeout(() => {
+                    igBtn.innerHTML = originalHTML;
+                    igBtn.style.background = ""; 
+                    window.location.href = `https://ig.me/m/${yourInstagramUsername}`;
+                }, 1500);
+            }).catch(err => {
+                // Hata olursa direkt yönlendir
+                window.location.href = `https://ig.me/m/${yourInstagramUsername}`;
+            });
+        }
+    </script>
+</body>
+</html>
