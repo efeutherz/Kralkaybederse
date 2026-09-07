@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Haftalık Mimar Terapisi 🛠️✨</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=Poppins:wght@300;400;600;800&display=swap');
+
+        body {
+            margin: 0; padding: 0; height: 100vh; overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            text-align: center; color: #fff;
+            user-select: none; -webkit-tap-highlight-color: transparent;
+            transition: background 1.5s ease;
+        }
+
+        /* Sihirli Gece Arka Planı (Quiz Başlayınca Devreye Girer) */
+        .magic-bg {
+            background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%) !important;
+            animation: none !important;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Ana Pano */
+        .dashboard, .quiz-container, .result-container, .final-container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 30px 20px; border-radius: 25px;
+            width: 85%; max-width: 400px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            z-index: 10; position: absolute;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        /* Başlangıçta diğer ekranları gizle */
+        .quiz-container, .result-container, .final-container {
+            opacity: 0; pointer-events: none; transform: scale(0.9);
+        }
+
+        .active-screen {
+            opacity: 1 !important; pointer-events: auto !important; transform: scale(1) !important; position: relative;
+        }
+
+        h1 { margin-top: 0; font-size: 1.8em; font-weight: 800; letter-spacing: 1px; }
+        .hp-font { font-family: 'Playfair Display', serif; color: #f1c40f; text-shadow: 0 0 10px rgba(241, 196, 15, 0.5); }
+        
+        p { font-size: 0.9em; line-height: 1.5; margin-bottom: 25px; font-weight: 300; opacity: 0.9; }
+
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+
+        .therapy-btn, .quiz-ans-btn {
+            background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white; padding: 15px 10px; border-radius: 15px;
+            font-family: 'Poppins', sans-serif; font-size: 0.85em; font-weight: 600;
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%;
+        }
+        .therapy-btn:active, .quiz-ans-btn:active { transform: scale(0.95); }
+        .btn-emoji { font-size: 2em; }
+
+        /* Harry Potter Başlat Butonu */
+        .hp-start-btn {
+            background: linear-gradient(45deg, #740001, #ae0001); color: #f1c40f; border: 1px solid #f1c40f;
+            padding: 15px 20px; border-radius: 50px; font-weight: 800; font-size: 0.95em;
+            width: 100%; cursor: pointer; transition: all 0.3s; font-family: 'Poppins', sans-serif;
+            box-shadow: 0 0 15px rgba(241, 196, 15, 0.4); text-transform: uppercase; letter-spacing: 1px;
+        }
+        .hp-start-btn:active { transform: scale(0.95); }
+
+        /* Quiz Ekranı Detayları */
+        .q-number { font-size: 0.8em; color: #f1c40f; margin-bottom: 10px; font-weight: bold; letter-spacing: 2px; }
+        .q-text { font-size: 1.05em; font-weight: 600; margin-bottom: 20px; min-height: 60px; }
+        .quiz-ans-btn { flex-direction: row; justify-content: flex-start; text-align: left; padding: 12px 15px; gap: 15px; }
+        .quiz-ans-btn:hover { background: rgba(241, 196, 15, 0.2); border-color: #f1c40f; }
+
+        /* Hediye Butonları */
+        .gift-btn {
+            background: rgba(241, 196, 15, 0.1); border: 2px solid #f1c40f; color: #fff;
+            padding: 15px; border-radius: 15px; font-weight: 600; font-size: 0.95em;
+            width: 100%; cursor: pointer; transition: all 0.3s; font-family: 'Poppins', sans-serif;
+            margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .gift-btn:hover { background: #f1c40f; color: #111; }
+
+        /* Efektler */
+        .sparkle {
+            position: absolute; width: 10px; height: 10px; border-radius: 50%; background: #fff;
+            box-shadow: 0 0 10px #f1c40f, 0 0 20px #f1c40f; z-index: 100;
+            animation: ping 0.8s cubic-bezier(0, 0, 0.2, 1) forwards; pointer-events: none;
+        }
+        @keyframes ping { 75%, 100% { transform: scale(3); opacity: 0; } }
+
+        /* Uçan Baykuş */
+        .flying-owl {
+            font-size: 4em; position: absolute; left: -100px; top: 30%;
+            animation: flyAcross 3s linear forwards; z-index: 200; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
+        }
+        @keyframes flyAcross {
+            0% { transform: translateX(0) translateY(0) rotate(5deg); }
+            50% { transform: translateX(50vw) translateY(-50px) rotate(-5deg); }
+            100% { transform: translateX(120vw) translateY(20px) rotate(10deg); }
+        }
+
+        /* Terapist Modal */
+        #modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center; z-index: 1000;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-box {
+            background: white; color: #333; padding: 30px; border-radius: 20px;
+            width: 80%; max-width: 320px; text-align: center;
+            transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal-emoji { font-size: 3em; margin-bottom: 10px; }
+        .modal-text { font-size: 1em; line-height: 1.6; margin-bottom: 25px; color: #555; }
+        .close-btn {
+            background: #e73c7e; color: white; border: none; padding: 10px 25px;
+            border-radius: 50px; font-weight: 600; font-size: 1em; cursor: pointer; width: 100%;
+        }
+
+        .confetti { position: absolute; width: 10px; height: 10px; z-index: 999; animation: confettiFall linear forwards; }
+        @keyframes confettiFall { 0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+
+    </style>
+</head>
+<body>
+
+    <!-- 1. ANA PANO -->
+    <div class="dashboard active-screen" id="dash-screen">
+        <h1>Mimar Terapisi 🛠️</h1>
+        <p>Hafta boyunca stres seviyen arttığında sana iyi gelecek acil durum butonları.</p>
+
+        <div class="btn-grid">
+            <button class="therapy-btn" onclick="openModal('revizyon')"><span class="btn-emoji">🤦‍♀️</span><span>Yine Revizyon</span></button>
+            <button class="therapy-btn" onclick="openModal('render')"><span class="btn-emoji">⏳</span><span>Render Çilesi</span></button>
+            <button class="therapy-btn" onclick="openModal('daralma')"><span class="btn-emoji">🤯</span><span>Daralma Geldi</span></button>
+            <button class="therapy-btn" onclick="openModal('gulumse')"><span class="btn-emoji">🎈</span><span>Beni Gülümset</span></button>
+        </div>
+
+        <button class="hp-start-btn" onclick="startHPQuiz()">🪄 Hogwarts Sınavına Gir</button>
+    </div>
+
+    <!-- 2. HARRY POTTER QUIZ EKRANI -->
+    <div class="quiz-container" id="quiz-screen">
+        <h1 class="hp-font">S.B.D Sınavı</h1>
+        <div class="q-number" id="q-counter">SORU 1 / 5</div>
+        <div class="q-text" id="q-text">Soru metni yükleniyor...</div>
+
+        <div class="options-grid" id="q-options">
+            <!-- Seçenekler JS ile dolacak -->
+        </div>
+    </div>
+
+    <!-- 3. SONUÇ VE HEDİYE SEÇİM EKRANI -->
+    <div class="result-container" id="result-screen">
+        <h1 class="hp-font" id="r-title">Tebrikler!</h1>
+        <p id="r-desc">Puanın hesaplanıyor...</p>
+        
+        <div style="margin-bottom: 15px; font-weight: bold; color: #f1c40f;">Sihirli Hediyeni Seç:</div>
+        <div id="gift-options">
+            <!-- Hediyeler JS ile dolacak -->
+        </div>
+    </div>
+
+    <!-- 4. FİNAL (ONAY) EKRANI -->
+    <div class="final-container" id="final-screen">
+        <h1 class="hp-font">Muziplik Tamamlandı!</h1>
+        <div style="font-size: 4em; margin: 20px 0;">📜🦉</div>
+        <p style="font-size: 1.1em; font-weight: 600;">Seçtiğin hediye baykuş postasına verilmiş, talebin başarıyla işleme alınmıştır.</p>
+        <p style="opacity: 0.8; font-size: 0.85em;">(Yakında bir yerlerde teslimatı bekle...)</p>
+    </div>
+
+    <!-- Terapist Modal -->
+    <div id="modal-overlay">
+        <div class="modal-box" id="modal-box">
+            <div class="modal-emoji" id="m-emoji">✨</div>
+            <div class="modal-text" id="m-text">Mesaj buraya gelecek.</div>
+            <button class="close-btn" onclick="closeModal()">Derin Bir Nefes Al ve Kapat</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. TERAPİ BUTONLARI MANTIĞI
+        // ==========================================
+        const messages = {
+            'revizyon': { emoji: "😎", text: "Derin bir nefes al. O tasarımı ilk haliyle ne kadar mükemmel yaptığını ikimiz de biliyoruz. Sen en iyisisin!" },
+            'render': { emoji: "☕", text: "Bilgisayar bile senin çiziminin harikalığını işlemekte zorlanıyor. Sen git kendine güzel bir kahve yap." },
+            'daralma': { emoji: "🍟", text: "Şu an uzaklara gitmek istiyorsun biliyorum. Dayan! Bu yoğunluk bitince o çok sevdiğin yoğurtlu patates tesellisi benden." },
+            'gulumse': { emoji: "✨", text: "Günün ne kadar yorucu geçerse geçsin, o güzel yüzündeki gülümseme hiç eksik olmasın. (Konfetilere dikkat 🎉)" }
+        };
+
+        const overlay = document.getElementById('modal-overlay');
+        const modalBox = document.getElementById('modal-box');
+
+        function openModal(type) {
+            document.getElementById('m-emoji').innerText = messages[type].emoji;
+            document.getElementById('m-text').innerText = messages[type].text;
+            overlay.style.display = "flex";
+            setTimeout(() => { overlay.style.opacity = "1"; modalBox.style.transform = "scale(1)"; }, 10);
+            if (type === 'gulumse') fireConfetti();
+        }
+
+        function closeModal() {
+            overlay.style.opacity = "0"; modalBox.style.transform = "scale(0.8)";
+            setTimeout(() => { overlay.style.display = "none"; }, 300);
+        }
+
+        function fireConfetti() {
+            const colors = ['#fbc531', '#e1b12c', '#4cd137', '#00a8ff', '#e84118'];
+            for (let i = 0; i < 50; i++) {
+                let c = document.createElement('div');
+                c.classList.add('confetti');
+                c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                c.style.left = Math.random() * 100 + 'vw';
+                c.style.top = '-' + (Math.random() * 20 + 10) + 'vh';
+                c.style.width = Math.random() * 10 + 5 + 'px';
+                c.style.height = Math.random() * 20 + 10 + 'px';
+                c.style.animationDuration = Math.random() * 2 + 2 + 's';
+                document.body.appendChild(c);
+                setTimeout(() => c.remove(), 4000);
+            }
+        }
+
+        // ==========================================
+        // 2. HARRY POTTER QUIZ MANTIĞI
+        // ==========================================
+        const questions = [
+            {
+                q: "Harry Potter'ın sadık baykuşunun adı nedir?",
+                options: ["Pigwidgeon", "Hedwig", "Errol", "Fawkes"],
+                correct: 1
+            },
+            {
+                q: "Mimar kalbini kanatacak bir soru: Hogwarts'ın yapısındaki en sinir bozucu statik problem sence hangisidir?",
+                options: ["Konuşan Tablolar", "Sırlar Odasının Tesisatı", "Sürekli Yer Değiştiren Merdivenler", "İhtiyaç Odasının M²'si"],
+                correct: 2
+            },
+            {
+                q: "Ruh Emici (Dementor) saldırısından sonra moral toplamak için ne yenmelidir?",
+                options: ["Balkabağı Pastası", "Kaymakbirası", "Yoğurtlu Patates", "Çikolata"], // Ufak bir gönderme :)
+                correct: 3
+            },
+            {
+                q: "Seçmen Şapka, Harry'i az kalsın hangi binaya yerleştirecekti?",
+                options: ["Slytherin", "Ravenclaw", "Hufflepuff", "Beauxbatons"],
+                correct: 0
+            },
+            {
+                q: "Şantiyede veya karanlık bir yolda ilerlerken hangi aydınlatma büyüsünü kullanırsın?",
+                options: ["Alohomora", "Lumos", "Nox", "Expelliarmus"],
+                correct: 1
+            }
+        ];
+
+        let currentQ = 0;
+        let score = 0;
+
+        function startHPQuiz() {
+            createSparkle(window.innerWidth/2, window.innerHeight/2);
+            document.body.classList.add('magic-bg'); // Arka planı sihirli gece yap
+            switchScreen('dash-screen', 'quiz-screen');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const qData = questions[currentQ];
+            document.getElementById('q-counter').innerText = `SORU ${currentQ + 1} / 5`;
+            document.getElementById('q-text').innerText = qData.q;
+            
+            const optionsDiv = document.getElementById('q-options');
+            optionsDiv.innerHTML = ""; // Temizle
+            
+            const labels = ["A", "B", "C", "D"];
+            qData.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-ans-btn';
+                btn.innerHTML = `<b style="color:#f1c40f;">${labels[index]})</b> ${opt}`;
+                btn.onclick = (e) => checkAnswer(index, e);
+                optionsDiv.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIndex, event) {
+            createSparkle(event.clientX, event.clientY);
+            
+            if(selectedIndex === questions[currentQ].correct) {
+                score++;
+            }
+            
+            currentQ++;
+            if(currentQ < questions.length) {
+                setTimeout(loadQuestion, 300); // Ufak gecikmeli geçiş
+            } else {
+                setTimeout(showResults, 400);
+            }
+        }
+
+        function showResults() {
+            switchScreen('quiz-screen', 'result-screen');
+            
+            const title = document.getElementById('r-title');
+            const desc = document.getElementById('r-desc');
+            const giftBox = document.getElementById('gift-options');
+            
+            giftBox.innerHTML = ""; // Temizle
+
+            let gifts = [];
+            
+            if(score <= 2) {
+                title.innerText = "Muggle mısın?!";
+                desc.innerText = `${score}/5 doğru. Sanırım sen sadece freelance yorgunu tatlı bir mimarsın. Yine de hediyeni hak ettin:`;
+                gifts = [
+                    { icon: "🐸", name: "Çikolatalı Kurbağa" },
+                    { icon: "🍺", name: "Buz Gibi Kaymakbirası" }
+                ];
+            } else if (score <= 4) {
+                title.innerText = "Sihir Damarlarında!";
+                desc.innerText = `${score}/5 doğru! Hogwarts mektubun yolda olabilir, bavullarını hazırlasan iyi edersin.`;
+                gifts = [
+                    { icon: "🧣", name: "Özel Hogwarts Atkısı" },
+                    { icon: "🪄", name: "Ollivander'dan Özel Asa" }
+                ];
+            } else {
+                title.innerText = "Gerçek Bir Büyücü!";
+                desc.innerText = `5/5 Kusursuz! Hermione Granger bile seninle gurur duyardı. İşte en nadide büyülü eşyalar:`;
+                gifts = [
+                    { icon: "🕰️", name: "Zaman Döndürücü Kolye" },
+                    { icon: "🟡", name: "Altın Snitch Kolye" },
+                    { icon: "🗺️", name: "Çapulcu Haritası" }
+                ];
+            }
+
+            gifts.forEach(gift => {
+                const btn = document.createElement('button');
+                btn.className = 'gift-btn';
+                btn.innerHTML = `<span>${gift.icon} ${gift.name}</span> <span style="font-size:1.2em;">🪄</span>`;
+                btn.onclick = (e) => selectGift(e);
+                giftBox.appendChild(btn);
+            });
+        }
+
+        function selectGift(event) {
+            createSparkle(event.clientX, event.clientY);
+            
+            // Baykuş uçur
+            const owl = document.createElement('div');
+            owl.className = 'flying-owl';
+            owl.innerText = '🦉✉️';
+            document.body.appendChild(owl);
+
+            switchScreen('result-screen', 'final-screen');
+            
+            // Baykuşu işi bitince DOM'dan sil
+            setTimeout(() => { owl.remove(); }, 3000);
+        }
+
+        // ==========================================
+        // YARDIMCI FONKSİYONLAR
+        // ==========================================
+        function switchScreen(hideId, showId) {
+            document.getElementById(hideId).classList.remove('active-screen');
+            setTimeout(() => {
+                document.getElementById(showId).classList.add('active-screen');
+            }, 300); // Animasyon süresi beklemesi
+        }
+
+        function createSparkle(x, y) {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.style.left = (x - 5) + 'px';
+            sparkle.style.top = (y - 5) + 'px';
+            document.body.appendChild(sparkle);
+            setTimeout(() => sparkle.remove(), 800);
+        }
+    </script>
+</body>
+</html>
