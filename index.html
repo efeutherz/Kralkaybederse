@@ -10,13 +10,12 @@
         body {
             margin: 0; padding: 0; height: 100vh; overflow: hidden;
             font-family: 'Poppins', sans-serif;
-            background: #0f172a; /* Sabah karanlığı */
+            background: #0f172a; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             color: #fff; user-select: none; -webkit-tap-highlight-color: transparent;
-            transition: background 2s ease-in-out;
+            transition: background 1.5s ease-in-out;
         }
 
-        /* Güneş Doğuşu Rengi (JS ile tetiklenir) */
         body.morning-vibe {
             background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
             color: #333;
@@ -35,7 +34,7 @@
         @keyframes blinker { 50% { opacity: 0; } }
 
         /* -------------------------------------
-           AŞAMA 2: KAFEİN YÜKLEME OYUNU
+           AŞAMA 2: ZARİF KAFEİN YÜKLEMESİ 
         ------------------------------------- */
         #coffee-screen {
             position: absolute; z-index: 40; display: none; opacity: 0;
@@ -47,22 +46,27 @@
             border-radius: 10px 10px 40px 40px; position: relative; overflow: hidden;
             box-shadow: 0 0 20px rgba(255,255,255,0.2), inset 0 0 10px rgba(255,255,255,0.2);
             margin-bottom: 40px; background: rgba(0,0,0,0.3);
+            transition: border-color 1.5s, box-shadow 1.5s, background 1.5s;
         }
+        
         body.morning-vibe .cup-container {
             border-color: #333; box-shadow: 0 10px 25px rgba(0,0,0,0.1); background: rgba(255,255,255,0.5);
         }
 
-        /* Sıvı dalga efekti */
-        .liquid {
-            position: absolute; bottom: 0; left: -50%; width: 200%; height: 0%; /* JS ile artacak */
-            background: #6f4e37; /* Kahve Rengi */
-            border-radius: 40%; animation: wave 2s linear infinite;
-            transition: height 0.1s linear;
+        /* Yukarıdan akan kahve efekti */
+        .pour-stream {
+            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            width: 12px; height: 100%; background: #4a2c11; /* Homojen kahve rengi */
+            opacity: 0; transition: opacity 0.2s; z-index: 5;
+            border-radius: 10px;
         }
-        @keyframes wave {
-            0% { transform: translateX(0) rotate(0deg); }
-            50% { transform: translateX(-25%) rotate(10deg); }
-            100% { transform: translateX(-50%) rotate(0deg); }
+        .pour-stream.active { opacity: 1; }
+
+        /* Homojen sıvı gövdesi */
+        .liquid {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 0%;
+            background: #4a2c11; /* Homojen kahve rengi */
+            z-index: 10; transition: height 0.05s linear;
         }
 
         .hold-btn {
@@ -71,14 +75,13 @@
             cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
             transition: all 0.2s; position: relative; overflow: hidden;
             box-shadow: 0 0 15px rgba(255,255,255,0.2);
+            -webkit-user-select: none; user-select: none;
         }
         body.morning-vibe .hold-btn { border-color: #ff6b81; color: #ff6b81; }
         .hold-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
 
         .loading-text { font-size: 0.8em; opacity: 0.7; margin-top: 15px; font-family: 'Space Mono', monospace;}
-
-        /* Kahve Çekirdeği Patlama Efekti */
-        .bean { position: absolute; font-size: 1.5em; pointer-events: none; opacity: 0; }
+        .bean { position: absolute; font-size: 1.5em; pointer-events: none; opacity: 0; z-index: 100; }
 
         /* -------------------------------------
            AŞAMA 3: 3D MOD KARTLARI
@@ -88,10 +91,8 @@
             flex-direction: column; align-items: center; width: 90%; max-width: 400px;
             transition: opacity 1s ease;
         }
-        
         .mood-title { font-size: 1.8em; font-weight: 800; color: #ff6b81; margin-bottom: 5px; }
         .mood-subtitle { font-size: 0.9em; color: #555; margin-bottom: 25px; }
-
         .cards-wrapper { display: flex; flex-direction: column; gap: 15px; width: 100%; perspective: 1000px; }
         
         .mood-card {
@@ -102,7 +103,6 @@
             transform-style: preserve-3d; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
         }
         .mood-card:active { transform: scale(0.95) rotateX(10deg); box-shadow: 0 5px 10px rgba(255, 107, 129, 0.1); }
-        
         .card-icon { font-size: 2.2em; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2)); }
         .card-content h3 { margin: 0; font-size: 1.1em; color: #333; }
         .card-content p { margin: 2px 0 0 0; font-size: 0.8em; color: #777; line-height: 1.3; }
@@ -120,10 +120,12 @@
         <div class="term-line" id="line5">> Acil müdahale protokolü devreye sokuluyor<span class="blink">_</span></div>
     </div>
 
-    <!-- AŞAMA 2: KAHVE DOLDURMA OYUNU -->
+    <!-- AŞAMA 2: ZARİF KAHVE DOLDURMA OYUNU -->
     <div id="coffee-screen">
         <h2 style="font-weight: 300; letter-spacing: 1px; margin-bottom: 30px;">Acil Kafein Yüklemesi</h2>
-        <div class="cup-container">
+        
+        <div class="cup-container" id="cup">
+            <div class="pour-stream" id="stream"></div>
             <div class="liquid" id="coffee-liquid"></div>
         </div>
         
@@ -182,13 +184,11 @@
             lines.forEach((line, index) => {
                 setTimeout(() => {
                     line.style.opacity = "1";
-                    // Titreşim (varsa)
                     if(navigator.vibrate) try{ navigator.vibrate(30); }catch(e){}
                 }, delay);
-                delay += 1200; // Her satır arası 1.2 sn
+                delay += 1200; 
             });
 
-            // Terminal bittikten sonra Kahve Ekranına geç
             setTimeout(() => {
                 document.getElementById('terminal-screen').style.opacity = "0";
                 setTimeout(() => {
@@ -201,52 +201,57 @@
         });
 
         // ==========================================
-        // 2. KAHVE DOLDURMA (BASILI TUTMA) MEKANİĞİ
+        // 2. BASİT VE ZARİF KAHVE DOLUM SİSTEMİ
         // ==========================================
         const brewBtn = document.getElementById('brew-btn');
         const liquid = document.getElementById('coffee-liquid');
+        const stream = document.getElementById('stream');
         
-        let holdInterval;
+        let fillInterval;
         let fillLevel = 0;
-        let isFilling = false;
+        let isFinished = false;
 
         const startBrewing = (e) => {
-            if(e.type === 'touchstart') e.preventDefault(); // Ekranda kaymayı engeller
-            if(isFilling) return;
-            isFilling = true;
-            brewBtn.style.transform = "scale(0.95)";
+            if(e.type === 'touchstart' || e.type === 'mousedown') e.preventDefault();
+            if(isFinished) return;
             
-            // Telefon titreşimi hissi
-            if(navigator.vibrate) try{ navigator.vibrate([20, 30, 20]); }catch(e){}
+            brewBtn.style.transform = "scale(0.95)";
+            stream.classList.add('active');
+            
+            if(navigator.vibrate) try{ navigator.vibrate(20); }catch(e){}
 
-            holdInterval = setInterval(() => {
-                fillLevel += 1.5; // Dolum hızı
+            clearInterval(fillInterval);
+            fillInterval = setInterval(() => {
+                fillLevel += 1; // Hız: Saniyede yaklaşık %33 dolar (3-4 sn sürer)
                 liquid.style.height = `${fillLevel}%`;
-                
-                // Arka planı kahve seviyesine göre aydınlat (geceden sabaha geçiş)
-                if(fillLevel > 50) {
-                    document.body.classList.add('morning-vibe');
-                }
 
-                if(fillLevel >= 110) { // Taştığında
+                if (fillLevel > 50) document.body.classList.add('morning-vibe');
+
+                if (fillLevel >= 110) {
                     finishBrewing();
                 }
             }, 30);
         };
 
-        const stopBrewing = () => {
-            isFilling = false;
-            clearInterval(holdInterval);
-            brewBtn.style.transform = "scale(1)";
+        const stopBrewing = (e) => {
+            if(isFinished) return;
             
-            // Eğer bırakırsa sıvı yavaşça düşmeye başlasın (Ceza mekaniği)
-            if(fillLevel < 110 && fillLevel > 0) {
-                holdInterval = setInterval(() => {
+            brewBtn.style.transform = "scale(1)";
+            stream.classList.remove('active');
+            
+            clearInterval(fillInterval);
+
+            // Bırakınca yavaşça geri süzülür
+            if(fillLevel > 0) {
+                fillInterval = setInterval(() => {
                     fillLevel -= 0.5;
-                    if(fillLevel <= 0) { fillLevel = 0; clearInterval(holdInterval); }
+                    if(fillLevel <= 0) {
+                        fillLevel = 0;
+                        clearInterval(fillInterval);
+                    }
                     liquid.style.height = `${fillLevel}%`;
-                    if(fillLevel < 50) document.body.classList.remove('morning-vibe');
-                }, 50);
+                    if (fillLevel <= 50) document.body.classList.remove('morning-vibe');
+                }, 30);
             }
         };
 
@@ -257,12 +262,15 @@
         window.addEventListener('touchend', stopBrewing);
 
         function finishBrewing() {
-            clearInterval(holdInterval);
+            isFinished = true;
+            clearInterval(fillInterval);
+            
+            stream.classList.remove('active');
+            
             brewBtn.removeEventListener('mousedown', startBrewing);
             brewBtn.removeEventListener('touchstart', startBrewing);
             brewBtn.innerText = "SİSTEM UYANDI!";
             
-            // Kahve Çekirdeği Patlatma Efekti
             explodeBeans();
 
             setTimeout(() => {
@@ -306,7 +314,6 @@
         function sendVibe(title, desc) {
             const finalMessage = `Sistem Başarıyla Uyandırıldı! ☀️☕\n\n📌 Bugünkü Modum: ${title}\n📝 Detay: ${desc}\n\nİşe hazırım, günaydın! 😎`;
             
-            // Cihazın kopyalama yeteneği varsa kopyalayıp wp aç
             navigator.clipboard.writeText(finalMessage).then(() => {
                 window.location.href = `https://wa.me/${yourPhoneNumber}?text=${encodeURIComponent(finalMessage)}`;
             }).catch(() => {
