@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kral Kaybederse: Uzman Analizi 👑</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Poppins:wght@300;400;600&display=swap');
+
+        body, html {
+            margin: 0; padding: 0; height: 100vh; overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            background-color: #050608;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: #c5a059; user-select: none; -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Sinematik Arka Plan */
+        .cinematic-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1586528994781-42001c9a6358?q=80&w=1200&auto=format&fit=crop');
+            background-size: cover; background-position: center;
+            opacity: 0.15; filter: contrast(1.2) grayscale(60%); z-index: 1;
+        }
+
+        /* Altın Tozu (Background Particle) */
+        .gold-dust {
+            position: absolute; width: 3px; height: 3px; background: #c5a059;
+            border-radius: 50%; box-shadow: 0 0 10px #c5a059; z-index: 2;
+            animation: floatUp linear forwards; pointer-events: none; opacity: 0;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+            20% { opacity: 0.8; }
+            80% { opacity: 0.8; }
+            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+        }
+
+        /* Arayüz Konteyneri */
+        .container {
+            position: absolute; z-index: 10; width: 85%; max-width: 420px;
+            background: rgba(10, 11, 15, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(197, 160, 89, 0.2); border-radius: 20px;
+            padding: 35px 25px; text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9), inset 0 0 20px rgba(197, 160, 89, 0.05);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .hidden { opacity: 0 !important; pointer-events: none; transform: scale(0.95); display: none !important; }
+        .active { opacity: 1 !important; pointer-events: auto; transform: scale(1); display: block; }
+
+        h1 { font-family: 'Cinzel', serif; font-size: 2em; margin: 0 0 15px 0; font-weight: 800; letter-spacing: 1px; color: #dfc888; text-shadow: 0 5px 15px rgba(223, 200, 136, 0.3); }
+        p { font-size: 0.95em; line-height: 1.6; color: #a2a2a2; margin-bottom: 30px; font-weight: 300; }
+
+        /* Sürpriz İltifat Ekranı (Overlay) */
+        #compliment-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 6, 8, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.8s ease; text-align: center;
+        }
+        .comp-title { font-family: 'Cinzel', serif; font-size: 3em; color: #dfc888; text-shadow: 0 0 20px rgba(223, 200, 136, 0.5); margin-bottom: 10px; transform: translateY(20px); transition: transform 0.8s ease; }
+        .comp-sub { font-family: 'Poppins', sans-serif; font-size: 1.2em; color: #ececec; font-weight: 300; transform: translateY(20px); transition: transform 0.8s ease; }
+        #compliment-screen.show { opacity: 1; pointer-events: auto; }
+        #compliment-screen.show .comp-title, #compliment-screen.show .comp-sub { transform: translateY(0); }
+
+        /* Butonlar */
+        .royal-btn {
+            background: linear-gradient(135deg, #876228 0%, #c5a059 50%, #876228 100%);
+            color: #050608; border: none; padding: 15px 20px; border-radius: 50px;
+            font-weight: 600; font-size: 1em; width: 100%; cursor: pointer;
+            transition: all 0.3s; font-family: 'Poppins', sans-serif;
+            text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 8px 20px rgba(197, 160, 89, 0.2);
+            background-size: 200% auto; animation: shine 3s linear infinite;
+        }
+        .royal-btn:active { transform: scale(0.95); }
+        @keyframes shine { to { background-position: 200% center; } }
+
+        /* Soru Ekranı Tasarımı */
+        .q-number { font-family: 'Cinzel', serif; font-size: 0.9em; color: #dfc888; margin-bottom: 25px; font-weight: bold; letter-spacing: 3px; }
+        
+        .q-text { font-size: 1.05em; font-weight: 400; margin-bottom: 30px; color: #ececec; line-height: 1.6; min-height: 80px;}
+
+        .options-grid { display: flex; flex-direction: column; gap: 12px; }
+        
+        .opt-btn {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(197, 160, 89, 0.3);
+            color: #c5a059; padding: 15px; border-radius: 12px; font-family: 'Poppins', sans-serif;
+            font-size: 0.9em; cursor: pointer; transition: all 0.3s; text-align: left; display: flex; align-items: center; gap: 15px;
+        }
+        .opt-btn:hover { background: rgba(197, 160, 89, 0.1); }
+        .opt-btn.correct { background: rgba(46, 204, 113, 0.15); border-color: #2ecc71; color: #2ecc71; box-shadow: 0 0 15px rgba(46,204,113,0.2); }
+        .opt-btn.wrong { background: rgba(231, 76, 60, 0.15); border-color: #e74c3c; color: #e74c3c; box-shadow: 0 0 15px rgba(231,76,60,0.2); animation: shake 0.4s; }
+
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+
+        .wa-btn { background: #25D366; color: #fff; box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3); margin-top: 20px; animation: none; letter-spacing: 1px; }
+        
+        .shell-display { font-size: 3.5em; margin: 20px 0; text-shadow: 0 0 15px rgba(197, 160, 89, 0.5); }
+
+    </style>
+</head>
+<body>
+
+    <!-- Arka Plan -->
+    <div class="cinematic-bg"></div>
+
+    <!-- SÜRPRİZ İLTİFAT EKRANI -->
+    <div id="compliment-screen">
+        <div class="comp-title" id="comp-title">Günaydın...</div>
+        <div class="comp-sub" id="comp-sub">Güneşin doğuşu gibi aydınlattın buraları.</div>
+    </div>
+
+    <!-- 1. GİRİŞ EKRANI -->
+    <div class="container active" id="intro-screen">
+        <div style="font-size: 3.5em; margin-bottom: 10px; filter: drop-shadow(0 0 10px #c5a059);">👑</div>
+        <h1>Kral Kaybederse</h1>
+        <p>Avına av olan bir avcının hikayesi...<br>Şımarık egolar, psikolojik çöküşler ve derin entrikalarla dolu bu drama evrenine gerçekten hakim misin?</p>
+        <button class="royal-btn" onclick="startQuiz()">Uzman Sınavını Başlat 🎬</button>
+    </div>
+
+    <!-- 2. QUIZ EKRANI -->
+    <div class="container hidden" id="quiz-screen">
+        <div class="q-number">ANALİZ <span id="q-counter">1</span> / 8</div>
+        <div class="q-text" id="q-text">Soru Yükleniyor...</div>
+        <div class="options-grid" id="q-options"></div>
+    </div>
+
+    <!-- 3. SONUÇ EKRANI -->
+    <div class="container hidden" id="result-screen">
+        <h1 id="r-title" style="font-size: 1.8em;">Klinik Rapor</h1>
+        <p id="r-desc" style="color: #dfc888; font-weight: 600;">Psikolojik analiz tamamlanıyor...</p>
+        
+        <div style="background: rgba(0,0,0,0.5); padding: 20px; border-radius: 15px; border: 1px solid rgba(197, 160, 89, 0.3); margin-bottom: 25px;">
+            <b style="color: #c5a059; font-size: 1.1em; letter-spacing: 1px;">Kazanılan Ödül</b><br>
+            <div class="shell-display">🐚 x<span id="shell-count">0</span></div>
+            <span style="font-size: 0.85em; color: #ececec;">Bu deniz kabukları hesabına başarıyla tanımlanmıştır. Dilediğin etkinlikte kullanabilirsin.</span>
+        </div>
+
+        <button class="royal-btn wa-btn" onclick="sendViaWhatsApp()"><span>💬</span> Sonucu Kaydet</button>
+    </div>
+
+    <script>
+        const yourPhoneNumber = "905369297201"; 
+        
+        // Arka plan altın tozu efekti
+        function createGoldDust() {
+            const dust = document.createElement('div');
+            dust.className = 'gold-dust';
+            dust.style.left = Math.random() * 100 + 'vw';
+            dust.style.animationDuration = (Math.random() * 5 + 5) + 's';
+            document.body.appendChild(dust);
+            setTimeout(() => dust.remove(), 10000);
+        }
+        setInterval(createGoldDust, 400);
+
+        const questions = [
+            {
+                q: "Kenan'ın hayatındaki tüm kadınları kontrol edebildiğine inandığı 'kral' döneminde, Fadi'ye olan asıl yaklaşım motivasyonu neydi?",
+                options: ["Onda annesinin şefkatini bulması", "Fadi'nin ona aşık olmaması ve fethedilecek zor bir 'av' olması", "Fadi'nin statüsünden faydalanmak istemesi", "Eşi Handan'ı kıskandırmak istemesi"],
+                correct: 1
+            },
+            {
+                q: "Dizinin kırılma noktalarından biri Kenan'ın terapiye başlama anıdır. Onu o koltuğa oturtan ve egosunu darmadağın eden spesifik olay nedir?",
+                options: ["Şirketinin iflas bayrağını çekmesi", "Karısı Handan'ın evi terk etmesi", "Pervane gibi etrafında dönen Fadi'nin onu reddedip başkasına gitmesi", "Yaşlanma korkusunun tetiklediği panik atak"],
+                correct: 2
+            },
+            {
+                q: "Terapistin geçmişe indiği sahnelerde, Kenan'ın narsist ve kadınlara karşı acımasız olmasının altındaki çocukluk travması olarak ne gösterilmiştir?",
+                options: ["Annesinin ona aşırı tapması ama gerçek sevgiyi vermemesi (Narsist yetiştirme)", "Babasının annesini aldatmasına şahit olması", "Yoksul ve dışlanmış bir çocukluk geçirmesi", "İlk aşkı tarafından acımasızca terk edilmesi"],
+                correct: 0
+            },
+            {
+                q: "Fadi (Fadime), Kenan'ın hayatına girmeden önce nasıl bir profil çiziyordu ve bu durum Kenan'ı neden cezbetti?",
+                options: ["Zengin bir aileden gelip şımarık olması", "Kenan'ın şirketinde çalışan hırslı bir asistan olması", "Kendi ayakları üzerinde duran, gururlu ve ona boyun eğmeyen yapısı", "Sırlarla dolu tehlikeli bir geçmişinin olması"],
+                correct: 2
+            },
+            {
+                q: "Eşi Handan'ın, Kenan'ın tüm ihanetlerini bilmesine rağmen o muhteşem yalıda kalmaya devam etmesinin altında yatan asıl psikolojik neden neydi?",
+                options: ["Kenan'ı takıntı derecesinde, hastalıklı bir şekilde sevmesi", "Kenan'ın gücünün ve statüsünün sunduğu konfordan vazgeçememesi", "Çocuklarının babasız büyümesini istememesi", "Kenan'ın onu sırlarıyla tehdit etmesi"],
+                correct: 1
+            },
+            {
+                q: "'Kral'ın çöküş döneminde, eskiden yüzüne bakmadığı kadınlardan bile onay ve ilgi dilenmeye başlamasına psikolojide hangi isim verilir?",
+                options: ["Oedipus kompleksi", "Borderline kişilik bozukluğu", "Stockholm sendromu", "Narsistik kırılma ve ego çöküşü"],
+                correct: 3
+            },
+            {
+                q: "Fadi karakteri Kenan'dan ayrıldıktan sonra kendi hayatını nasıl yeniden inşa etmiş ve Kenan'a en büyük darbeyi vurmuştur?",
+                options: ["Kenan'ın en büyük rakibiyle evlenerek", "Kendi başarı hikayesini yazıp, mutlu ve mütevazı bir evlilik yaparak", "Kenan'ı medyada rezil ederek", "Bütün servetini Kenan'ın elinden alarak"],
+                correct: 1
+            },
+            {
+                q: "Hikayenin finalinde terapistin koltuğunda oturan Kenan, kendi içindeki hangi acı gerçekle tam anlamıyla yüzleşip kabullenmiştir?",
+                options: ["Handan'a geri dönmesi gerektiğini", "Aslında Fadi'yi hiç sevmediğini", "Yıllarca sadece 'kendi yarattığı sahte bir krallıkta' yapayalnız yaşadığını", "Gerçek gücün para olmadığını"],
+                correct: 2
+            }
+        ];
+
+        let currentQ = 0;
+        let score = 0;
+        let finalMessage = "";
+
+        function startQuiz() {
+            if(navigator.vibrate) try{ navigator.vibrate(30); }catch(e){}
+            document.getElementById('intro-screen').classList.replace('active', 'hidden');
+            setTimeout(() => {
+                document.getElementById('quiz-screen').classList.replace('hidden', 'active');
+                loadQuestion();
+            }, 600);
+        }
+
+        function loadQuestion() {
+            const qData = questions[currentQ];
+            document.getElementById('q-counter').innerText = currentQ + 1;
+            document.getElementById('q-text').innerText = qData.q;
+            
+            const optionsDiv = document.getElementById('q-options');
+            optionsDiv.innerHTML = ""; 
+            
+            const labels = ["A", "B", "C", "D"];
+            qData.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'opt-btn';
+                btn.innerHTML = `<b style="color:#dfc888; font-family:'Cinzel', serif; font-size:1.3em; margin-right: 5px;">${labels[index]}</b> <span style="flex-grow:1;">${opt}</span>`;
+                btn.onclick = () => checkAnswer(btn, index);
+                optionsDiv.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(btnEl, selectedIndex) {
+            const allBtns = document.querySelectorAll('.opt-btn');
+            allBtns.forEach(b => b.style.pointerEvents = 'none'); 
+
+            const correctIndex = questions[currentQ].correct;
+
+            if(selectedIndex === correctIndex) {
+                btnEl.classList.add('correct');
+                score++;
+                if(navigator.vibrate) try{ navigator.vibrate([20, 20]); }catch(e){}
+            } else {
+                btnEl.classList.add('wrong');
+                allBtns[correctIndex].classList.add('correct'); 
+                if(navigator.vibrate) try{ navigator.vibrate(100); }catch(e){}
+            }
+            
+            currentQ++;
+            setTimeout(() => {
+                
+                // --- SÜRPRİZ İLTİFAT SİSTEMİ ---
+                if (currentQ === 2) {
+                    showCompliment("Günaydın... ☀️", "Güneşin doğuşu gibi aydınlattın buraları.");
+                } else if (currentQ === 5) {
+                    showCompliment("Bu Arada...", "Bugün çok güzelsin. ✨");
+                } else if (currentQ < questions.length) {
+                    loadQuestion();
+                } else {
+                    showResults();
+                }
+
+            }, 1800); 
+        }
+
+        function showCompliment(titleText, subText) {
+            const compScreen = document.getElementById('compliment-screen');
+            document.getElementById('comp-title').innerText = titleText;
+            document.getElementById('comp-sub').innerText = subText;
+            
+            // İltifat ekranını göster
+            compScreen.classList.add('show');
+            if(navigator.vibrate) try{ navigator.vibrate([30, 50, 30]); }catch(e){}
+
+            // 2.5 saniye sonra gizle ve sonraki soruya geç
+            setTimeout(() => {
+                compScreen.classList.remove('show');
+                setTimeout(() => {
+                    loadQuestion();
+                }, 800); 
+            }, 2500);
+        }
+
+        function showResults() {
+            document.getElementById('quiz-screen').classList.replace('active', 'hidden');
+            
+            setTimeout(() => {
+                document.getElementById('result-screen').classList.replace('hidden', 'active');
+                
+                const title = document.getElementById('r-title');
+                const desc = document.getElementById('r-desc');
+                let shells = 0;
+                
+                if(score <= 3) {
+                    title.innerText = "Sıradan Bir Av 🎭";
+                    desc.innerText = `Sadece ${score} doğru. Dizinin psikolojik derinliğine henüz inmemişsin, ama sorun değil.`;
+                    shells = 10;
+                } else if (score <= 6) {
+                    title.innerText = "Fadi'nin Uyanışı 🦋";
+                    desc.innerText = `${score} doğru! Sen de Fadi gibi olayların iç yüzünü net görüyorsun.`;
+                    shells = 35;
+                } else {
+                    title.innerText = "Klinik Uzman! 👑";
+                    desc.innerText = `${score} doğru, kusursuz! Kenan'ın tüm psikolojik analizini yapmışsın.`;
+                    shells = 100;
+                }
+
+                let currentShells = 0;
+                const shellCountEl = document.getElementById('shell-count');
+                const shellInterval = setInterval(() => {
+                    currentShells += 3;
+                    if(currentShells >= shells) {
+                        currentShells = shells;
+                        clearInterval(shellInterval);
+                    }
+                    shellCountEl.innerText = currentShells;
+                }, 30);
+
+                finalMessage = `Kral Kaybederse analizimi tamamladım! 👑\n\n🎯 Puanım: ${score}/8\n🐚 Kazandığım Deniz Kabuğu: ${shells}\n\nÖdülümü kasaya ekliyorum! 😎`;
+
+            }, 600);
+        }
+
+        function sendViaWhatsApp() {
+            navigator.clipboard.writeText(finalMessage).then(() => {
+                window.location.href = `https://wa.me/${yourPhoneNumber}?text=${encodeURIComponent(finalMessage)}`;
+            }).catch(() => {
+                window.location.href = `https://wa.me/${yourPhoneNumber}?text=${encodeURIComponent(finalMessage)}`;
+            });
+        }
+    </script>
+</body>
+</html>
